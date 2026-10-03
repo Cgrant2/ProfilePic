@@ -11,8 +11,7 @@
 #include <gd.h>
 #include <math.h>
  
-double rtod(const double rad) { return (rad*180/M_PI); }
-double g(const double x, const int r) {
+double invderiv(const double x, const int r) {
 	if(x>0) {
 		return (sqrt((x*x*r*r)/(1+(x*x))));
 	}
@@ -20,24 +19,22 @@ double g(const double x, const int r) {
 		return (-sqrt((x*x*r*r)/(1+(x*x))));
 	}
 }
-double f(const double x, const int r) {
+double circgen(const double x, const int r) {
 	return (-sqrt((r*r)-(x*x)));
 }
-double L(const double x, const double s, const int r) {
+double tanline(const double x, const double s, const int r) {
 	if(x<=0) {
-		return (-s*(x-g(-s, r))+f(g(-s,r),r));
+		return (-s*(x-invderiv(-s, r))+circgen(invderiv(-s,r),r));
 	}
 	else {
-		return (s*(x-g(s, r))+f(g(s,r),r));
+		return (s*(x-invderiv(s, r))+circgen(invderiv(s,r),r));
 	}
 }
 
 int main()
 {
-    //////////////////////////////////////////////////////////////////////////
-    //
     // Declare variables
-    //
+    
     char       *outfile    = NULL;   // name of the output file
     char        project[]  = "pfp"; // "string" of project name
     FILE       *out        = NULL;   // output file pointer
@@ -47,7 +44,7 @@ int main()
     int         black      = 0;      // variable representing color value
     int         white      = 0;
 
-    // Construct output file name (keep this as-is)
+    // Construct output file name
     outfile                = (char *) malloc (sizeof(char) * 73);
     sprintf (outfile, "%s.png", project);
  
@@ -64,7 +61,7 @@ int main()
     image                  = gdImageCreate ((wide + 1), (high + 1));
  
     // mixing up our colors
-    //                                             image  red   green blue
+    //                                             image   R     G     B
 
     black                  = gdImageColorAllocate (image, 0x00, 0x00, 0x00);
     white                  = gdImageColorAllocate (image, 0xFF, 0xFF, 0xE0);
@@ -86,9 +83,9 @@ int main()
     gdImageArc (image, 0+orx, 0+ory, r, r, 0, 360, white);
     gdImageFill (image, 0+orx, 0+ory, white);
 	// Lines
-	gdImageLine (image, (int)(-g(slope,r/2))+orx, (int)(-L(-g(slope, r/2), slope, r/2))+ory, orx, (int)(-L(0, slope, r/2))+ory, white);
-	gdImageLine (image, orx, (int)(-L(0, slope, r/2))+ory, (int)(-g(-slope,r/2))+orx, (int)(-L(-g(slope, r/2), slope, r/2))+ory, white);
-    gdImageFill (image, 0+orx, (int)(-L(0, slope, r/2))+ory-5, white);
+	gdImageLine (image, (int)(-invderiv(slope,r/2))+orx, (int)(-tanline(-invderiv(slope, r/2), slope, r/2))+ory, orx, (int)(-tanline(0, slope, r/2))+ory, white);
+	gdImageLine (image, orx, (int)(-tanline(0, slope, r/2))+ory, (int)(-invderiv(-slope,r/2))+orx, (int)(-tanline(-invderiv(slope, r/2), slope, r/2))+ory, white);
+    gdImageFill (image, 0+orx, (int)(-tanline(0, slope, r/2))+ory-5, white);
 	//Right Eye
     gdImageArc (image, orx+c2, ory, r, r, 0, 360, black);
     gdImageFill (image, orx+(r/2)-1, ory, black);
@@ -117,28 +114,21 @@ int main()
     gdImageFill (image, orx+r/8, r/2+ory, black);
 
 
-    //////////////////////////////////////////////////////////////////////////
-    //
     // Open the output file (indicated in 'outfile') for writing (keep as-is)
-    //
-    out           = fopen (outfile, "wb");
+    
+	out           = fopen (outfile, "wb");
     if (out      == NULL)
     {
         fprintf (stderr, "Error opening '%s'\n", outfile);
         exit (1);
     }
  
-    //////////////////////////////////////////////////////////////////////////
-    //
     // Export, in PNG format, the image data in memory to our output file
-    // (keep as-is)
-    //
-    gdImagePngEx (image, out, -1);
+    
+	gdImagePngEx (image, out, -1);
  
-    //////////////////////////////////////////////////////////////////////////
-    //
-    // Close things up (keep as-is)
-    //
+    // Close things up
+
     fclose (out);
     gdImageDestroy (image);
  
