@@ -64,7 +64,7 @@ int main()
     //                                             image   R     G     B
 
     black                  = gdImageColorAllocate (image, 0x00, 0x00, 0x00);
-    white                  = gdImageColorAllocate (image, 0xFF, 0xFF, 0xE0);
+    white                  = gdImageColorAllocate (image, 0xFF, 0xFF, 0xE8);
 
     // Paint the background black
     gdImageFilledRectangle (image, 0, 0, wide, high, black);
